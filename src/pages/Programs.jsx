@@ -1,61 +1,50 @@
 import React from 'react';
 import { Helmet } from 'react-helmet';
 import { motion } from 'framer-motion';
-import { BookOpen, Users, Globe, Palette, GraduationCap, Heart, ExternalLink } from 'lucide-react';
+import * as Icons from 'lucide-react'; // dynamic icon access by name
+import pageData from '../data/programs.json';
 
-// >>> import your local art images
-import art1 from '../images/art1.png';
-import art2 from '../images/art2.png';
-import art3 from '../images/art31.jpeg';
+// Dynamically import ALL images in ../images with Vite
+const imageModules = import.meta.glob('../images/*.{png,jpg,jpeg,webp,svg}', { eager: true });
+
+// Helper to get image URL by filename in JSON (e.g., "art1.png")
+const getImageSrc = (filename) => {
+  if (!filename) return '';
+  // Find a key that ends with the filename
+  const entry = Object.entries(imageModules).find(([k]) => k.endsWith(`/${filename}`));
+  const mod = entry?.[1];
+  // Vite returns the URL as default or as the module itself depending on asset handling
+  return (mod && ('default' in mod ? mod.default : mod)) || '';
+};
+
+// Helper to render an icon by name + className from JSON
+const renderIcon = (icon) => {
+  if (!icon?.name) return null;
+  const IconComp = Icons[icon.name];
+  return IconComp ? <IconComp className={icon.className || ''} /> : null;
+};
 
 const Programs = () => {
-  const programs = [
-    {
-      icon: <Globe className="w-12 h-12 text-gold" />,
-      title: 'Virtual Learning for Afghan Girls',
-      description: 'Comprehensive online education programs designed specifically for Afghan girls, providing access to quality education despite geographical and social barriers.',
-      features: ['Live interactive classes', 'Recorded lessons for flexible learning', 'Digital literacy training', 'Safe learning environment']
-    },
-    {
-      icon: <Users className="w-12 h-12 text-gold" />,
-      title: 'Leadership & Mentorship',
-      description: 'Developing the next generation of leaders through one-on-one mentorship, leadership workshops, and personal development programs.',
-      features: ['Personal mentorship matching', 'Leadership skill development', 'Public speaking training', 'Career guidance']
-    },
-    {
-      icon: <GraduationCap className="w-12 h-12 text-gold" />,
-      title: 'ESL Tutoring & College Prep',
-      description: 'Supporting Afghan refugee youth in the U.S. with English language learning, academic tutoring, and college preparation services.',
-      features: ['English language instruction', 'Academic subject tutoring', 'College application support', 'Scholarship guidance']
-    },
-    {
-      icon: <Palette className="w-12 h-12 text-gold" />,
-      title: 'Student Artwork & Creative Expression',
-      description: 'Encouraging creativity and self-expression through art programs that help students process their experiences and share their stories.',
-      features: ['Art therapy sessions', 'Creative writing workshops', 'Digital art training', 'Cultural expression projects']
-    }
-  ];
+  const { meta, hero, programs, artSection, impact } = pageData;
 
   return (
     <>
       <Helmet>
-        <title>Programs - The School of Freedom</title>
-        <meta name="description" content="Explore our comprehensive programs including virtual learning for Afghan girls, leadership development, ESL tutoring, and creative expression initiatives." />
+        <title>{meta.title}</title>
+        <meta name="description" content={meta.description} />
       </Helmet>
 
-      {/* Hero Section */}
+      {/* Hero */}
       <section className="py-20 hero-gradient text-white">
         <div className="container mx-auto px-4">
-          <motion.div 
+          <motion.div
             className="text-center max-w-4xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-5xl md:text-6xl font-bold font-display mb-6">Our Programs</h1>
-            <p className="text-xl md:text-2xl">
-              Comprehensive educational initiatives designed to empower, inspire, and transform lives through learning.
-            </p>
+            <h1 className="text-5xl md:text-6xl font-bold font-display mb-6">{hero.title}</h1>
+            <p className="text-xl md:text-2xl">{hero.subtitle}</p>
           </motion.div>
         </div>
       </section>
@@ -64,25 +53,25 @@ const Programs = () => {
       <section id="programs-section" className="section-padding">
         <div className="container mx-auto px-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {programs.map((program, index) => (
+            {programs.map((p, idx) => (
               <motion.div
-                key={index}
+                key={`${p.title}-${idx}`}
                 className="card p-8"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.1 }}
+                transition={{ duration: 0.6, delay: idx * 0.1 }}
                 viewport={{ once: true }}
               >
                 <div className="flex items-center mb-6">
-                  {program.icon}
-                  <h3 className="text-2xl font-semibold text-navy ml-4">{program.title}</h3>
+                  {renderIcon(p.icon)}
+                  <h3 className="text-2xl font-semibold text-navy ml-4">{p.title}</h3>
                 </div>
-                <p className="text-gray-700 mb-6 text-lg">{program.description}</p>
+                <p className="text-gray-700 mb-6 text-lg">{p.description}</p>
                 <ul className="space-y-2">
-                  {program.features.map((feature, featureIndex) => (
-                    <li key={featureIndex} className="flex items-center text-gray-600">
+                  {p.features.map((f, i) => (
+                    <li key={`${p.title}-f-${i}`} className="flex items-center text-gray-600">
                       <div className="w-2 h-2 bg-gold rounded-full mr-3"></div>
-                      {feature}
+                      {f}
                     </li>
                   ))}
                 </ul>
@@ -92,189 +81,156 @@ const Programs = () => {
         </div>
       </section>
 
-      {/* Art / Expression Section */}
+      {/* Art / Expression */}
       <section className="py-16 bg-light-gray">
         <div className="container mx-auto px-4">
-          <motion.div 
+          <motion.div
             className="text-center mb-12"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="section-title">Student Artwork & Expression</h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Our students express their hopes, dreams, and experiences through powerful artwork that tells their stories.
-            </p>
+            <h2 className="section-title">{artSection.title}</h2>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{artSection.subtitle}</p>
           </motion.div>
 
-          {/* Row 1 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
+          {/* Rows (layout-driven) */}
+          {artSection.rows.map((row, i) => (
+            <div
+              key={`art-row-${i}`}
+              className={`grid grid-cols-1 md:grid-cols-2 gap-12 items-center ${i > 0 ? 'mt-16' : ''}`}
             >
-              <img
-                className="w-full h-96 object-cover rounded-lg shadow-lg"
-                alt="Student artwork 1"
-                src={art1}
-              />
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-            >
-              <div className="quote-card">
-                <p className="text-2xl font-medium mb-4 font-display">
-                  "It wasn't always easy, but it's worth it."
-                </p>
-                <p className="text-lg font-semibold mb-6">— Wagma, School of Freedom Student</p>
-                <p className="text-gray-700">
-                  This powerful piece represents the resilience and determination of our students. 
-                  Through art, they share their journey of overcoming challenges and finding strength 
-                  in education and community.
-                </p>
+              {/* Left */}
+              <motion.div
+                initial={{ opacity: 0, x: row.layout === 'imageLeftQuoteRight' ? -50 : -50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+                className={row.layout === 'textLeftImageRight' ? 'order-2 md:order-1' : ''}
+              >
+                {row.layout === 'imageLeftQuoteRight' ? (
+                  <img
+                    className="w-full h-96 object-cover rounded-lg shadow-lg"
+                    alt={row.image.alt}
+                    src={getImageSrc(row.image.src)}
+                  />
+                ) : (
+                  <div className="bg-white p-8 rounded-lg shadow-lg">
+                    {row.title && <h3 className="text-2xl font-semibold text-navy mb-4">{row.title}</h3>}
+                    {(row.paragraphs || []).map((p, pi) => (
+                      <p key={`p-${pi}`} className={`text-gray-700 ${pi === 0 ? 'mb-4' : ''}`}>{p}</p>
+                    ))}
+                  </div>
+                )}
+              </motion.div>
+
+              {/* Right */}
+              <motion.div
+                initial={{ opacity: 0, x: row.layout === 'imageLeftQuoteRight' ? 50 : 50 }}
+                whileInView={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8 }}
+                viewport={{ once: true }}
+                className={row.layout === 'textLeftImageRight' ? 'order-1 md:order-2' : ''}
+              >
+                {row.layout === 'imageLeftQuoteRight' ? (
+                  <div className="quote-card">
+                    <p className="text-2xl font-medium mb-4 font-display">"{row.quote}"</p>
+                    <p className="text-lg font-semibold mb-6">{row.quoteBy}</p>
+                    <p className="text-gray-700">{row.body}</p>
+                  </div>
+                ) : (
+                  <img
+                    className="w-full h-96 object-cover rounded-lg shadow-lg"
+                    alt={row.image.alt}
+                    src={getImageSrc(row.image.src)}
+                  />
+                )}
+              </motion.div>
+            </div>
+          ))}
+
+          {/* Mini gallery */}
+          {artSection.miniGallery?.images?.length > 0 && (
+            <div className="mt-16">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {artSection.miniGallery.images.map((img, i) => (
+                  <div
+                    key={`mini-${i}`}
+                    className={`rounded-lg shadow-lg bg-white flex items-center justify-center p-2 ${i === 0 ? 'md:col-span-3' : ''}`}
+                  >
+                    <img
+                      src={getImageSrc(img.src)}
+                      alt={img.alt || `gallery-${i}`}
+                      className="max-h-[420px] w-auto object-contain"
+                      loading="lazy"
+                    />
+                  </div>
+                ))}
               </div>
-            </motion.div>
-          </div>
+            </div>
+          )}
 
-          {/* Row 2 */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center mt-16">
+          {/* Gallery link card */}
+          {artSection.galleryLink && (
             <motion.div
-              initial={{ opacity: 0, x: -50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6 }}
               viewport={{ once: true }}
-              className="order-2 md:order-1"
+              className="mt-16"
             >
-              <div className="bg-white p-8 rounded-lg shadow-lg">
-                <h3 className="text-2xl font-semibold text-navy mb-4">The Power of Creative Expression</h3>
-                <p className="text-gray-700 mb-4">
-                  Art serves as a universal language that transcends barriers and allows our students 
-                  to communicate their experiences, hopes, and dreams. Through creative expression, 
-                  they process their journey and inspire others.
-                </p>
-                <p className="text-gray-700">
-                  Each piece tells a story of courage, resilience, and the transformative power of 
-                  education. These artworks remind us why our mission is so important and the 
-                  impact we're making in young lives.
-                </p>
-              </div>
-            </motion.div>
-            
-            <motion.div
-              initial={{ opacity: 0, x: 50 }}
-              whileInView={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.8 }}
-              viewport={{ once: true }}
-              className="order-1 md:order-2"
-            >
-              <img
-                className="w-full h-96 object-cover rounded-lg shadow-lg"
-                alt="Student artwork 2"
-                src={art2}
-              />
-            </motion.div>
-          </div>
-
-          {/* Mini gallery with your third image */}
-        {/* Mini gallery with your third image */}
-<div className="mt-16">
-  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-    <div className="rounded-lg shadow-lg bg-white flex items-center justify-center p-2 md:col-span-3">
-      <img
-        src={art3}
-        alt="Student artwork 3"
-        className="max-h-[420px] w-auto object-contain"
-        loading="lazy"
-      />
-    </div>
-  </div>
-</div>
-
-
-          {/* Beautiful link card to Google Drive gallery */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6 }}
-            viewport={{ once: true }}
-            className="mt-16"
-          >
-            <a
-              href="https://drive.google.com/drive/folders/1F2FfPeTWKtcKUegTJcPkv_bTowxjhBwz"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block rounded-2xl bg-gradient-to-r from-gold to-yellow-400 p-1 shadow-lg hover:shadow-xl transition"
-            >
-              <div className="bg-white rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between">
-                <div className="text-center md:text-left">
-                  <h3 className="text-2xl font-bold text-navy">Explore More Student Art</h3>
-                  <p className="text-gray-600 mt-2">
-                    Visit our full gallery to see additional drawings, paintings, and creative projects.
-                  </p>
+              <a
+                href={artSection.galleryLink.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block rounded-2xl bg-gradient-to-r from-gold to-yellow-400 p-1 shadow-lg hover:shadow-xl transition"
+              >
+                <div className="bg-white rounded-2xl p-8 flex flex-col md:flex-row items-center justify-between">
+                  <div className="text-center md:text-left">
+                    <h3 className="text-2xl font-bold text-navy">{artSection.galleryLink.title}</h3>
+                    <p className="text-gray-600 mt-2">{artSection.galleryLink.subtitle}</p>
+                  </div>
+                  <div className="mt-6 md:mt-0 flex items-center gap-3 text-navy">
+                    <span className="font-semibold">{artSection.galleryLink.cta}</span>
+                    {renderIcon(artSection.galleryLink.icon)}
+                  </div>
                 </div>
-                <div className="mt-6 md:mt-0 flex items-center gap-3 text-navy">
-                  <span className="font-semibold">Open Gallery</span>
-                  <ExternalLink className="w-5 h-5" />
-                </div>
-              </div>
-            </a>
-          </motion.div>
+              </a>
+            </motion.div>
+          )}
         </div>
       </section>
 
-      {/* Impact Section */}
+      {/* Impact */}
       <section className="py-16 bg-navy text-white">
         <div className="container mx-auto px-4">
-          <motion.div 
+          <motion.div
             className="text-center max-w-4xl mx-auto"
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <h2 className="text-4xl font-bold font-display mb-6">Making a Real Difference</h2>
-            <p className="text-xl mb-8">
-              Our programs are more than just educational initiatives—they're lifelines that provide 
-              hope, opportunity, and a pathway to a brighter future for Afghan girls and refugee youth.
-            </p>
-            
+            <h2 className="text-4xl font-bold font-display mb-6">{impact.title}</h2>
+            <p className="text-xl mb-8">{impact.subtitle}</p>
+
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gold rounded-full flex items-center justify-center mx-auto mb-4">
-                  <BookOpen className="w-8 h-8 text-navy" />
+              {impact.items.map((it, i) => (
+                <div className="text-center" key={`impact-${i}`}>
+                  <div className="w-16 h-16 bg-gold rounded-full flex items-center justify-center mx-auto mb-4">
+                    {renderIcon(it.icon)}
+                  </div>
+                  <h3 className="text-xl font-semibold mb-2">{it.title}</h3>
+                  <p>{it.text}</p>
                 </div>
-                <h3 className="text-xl font-semibold mb-2">Quality Education</h3>
-                <p>Providing world-class education regardless of location or circumstances.</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gold rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Heart className="w-8 h-8 text-navy" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Emotional Support</h3>
-                <p>Creating safe spaces for healing, growth, and personal development.</p>
-              </div>
-              
-              <div className="text-center">
-                <div className="w-16 h-16 bg-gold rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Users className="w-8 h-8 text-navy" />
-                </div>
-                <h3 className="text-xl font-semibold mb-2">Community Building</h3>
-                <p>Fostering connections and building supportive networks for lasting impact.</p>
-              </div>
+              ))}
             </div>
           </motion.div>
         </div>
       </section>
     </>
-  );
+  ); 
 };
 
 export default Programs;

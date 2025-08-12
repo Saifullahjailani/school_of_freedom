@@ -130,7 +130,7 @@ const Petition = () => {
       </section>
 
       {/* Petition Form */}
-      <section className="py-16 bg-navy text-white">
+      <section className="py-16 bg-navy text-white" id='petition'>
         <div className="container mx-auto px-4">
           <div className="max-w-2xl mx-auto">
             <motion.div 

@@ -1,11 +1,21 @@
-
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { Heart, Mail, Phone, MapPin } from 'lucide-react';
+import data from '../data/navigation.json';
+
+const isExternal = (href = '') => /^https?:\/\//i.test(href);
 
 const Footer = () => {
+  const navItems = data?.navItems || [];
+  // actions can be an object like { donate: {...}, petition: {...} } or an array
+  const actionsArray = Array.isArray(data?.actions)
+    ? data.actions
+    : data?.actions
+    ? Object.values(data.actions)
+    : [];
+
   return (
-    <footer className="bg-navy text-white">
+    <footer className="bg-navy text-white py-10">
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo and Mission */}
@@ -31,11 +41,27 @@ const Footer = () => {
           <div>
             <span className="text-lg font-semibold mb-4 block">Quick Links</span>
             <ul className="space-y-2">
-              <li><Link to="/about" className="text-gray-300 hover:text-gold transition-colors">About Us</Link></li>
-              <li><Link to="/programs" className="text-gray-300 hover:text-gold transition-colors">Programs</Link></li>
-              <li><Link to="/team" className="text-gray-300 hover:text-gold transition-colors">Our Team</Link></li>
-              <li><Link to="/press" className="text-gray-300 hover:text-gold transition-colors">Press & Media</Link></li>
-              <li><Link to="/contact" className="text-gray-300 hover:text-gold transition-colors">Contact</Link></li>
+              {navItems.map((item, idx) => (
+                <li key={idx}>
+                  {isExternal(item.path) ? (
+                    <a
+                      href={item.path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-300 hover:text-gold transition-colors"
+                    >
+                      {item.name}
+                    </a>
+                  ) : (
+                    <Link
+                      to={item.path || '/'}
+                      className="text-gray-300 hover:text-gold transition-colors"
+                    >
+                      {item.name}
+                    </Link>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
 
@@ -43,10 +69,27 @@ const Footer = () => {
           <div>
             <span className="text-lg font-semibold mb-4 block">Get Involved</span>
             <ul className="space-y-2">
-              <li><Link to="/donate" className="text-gray-300 hover:text-gold transition-colors">Donate Now</Link></li>
-              <li><Link to="/petition" className="text-gray-300 hover:text-gold transition-colors">Sign Petition</Link></li>
-              <li><a href="#newsletter" className="text-gray-300 hover:text-gold transition-colors">Newsletter</a></li>
-              <li><a href="#volunteer" className="text-gray-300 hover:text-gold transition-colors">Volunteer</a></li>
+              {actionsArray.map((item, idx) => (
+                <li key={idx}>
+                  {isExternal(item.href) ? (
+                    <a
+                      href={item.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-gray-300 hover:text-gold transition-colors"
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link
+                      to={item.href || '/'}
+                      className="text-gray-300 hover:text-gold transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
+                </li>
+              ))}
             </ul>
           </div>
         </div>
@@ -70,18 +113,13 @@ const Footer = () => {
         </div>
 
         {/* Copyright */}
-      <div className="border-t border-gray-700 mt-8 pt-8 text-center space-y-2">
-  <p className="text-gray-300 flex items-center justify-center space-x-2">
-    <span>© 2025 The School of Freedom. Made with</span>
-    <Heart size={16} className="text-gold" />
-    <span>for education and freedom.</span>
-  </p>
-  <p className="text-sm text-gray-400">
-    Website designed and built by <span className="font-semibold text-gold">Masoud Mahmoodi</span>
-  </p>
-</div>
-
-
+        <div className="border-t border-gray-700 mt-8 pt-8 text-center space-y-2">
+          <p className="text-gray-300 flex items-center justify-center space-x-2">
+            <span>© 2025 The School of Freedom. Made with</span>
+            <Heart size={16} className="text-gold" />
+            <span>for education and freedom.</span>
+          </p>
+        </div>
       </div>
     </footer>
   );
